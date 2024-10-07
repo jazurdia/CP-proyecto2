@@ -10,13 +10,14 @@ void decrypt(long key, char *ciph, int len) {
     DES_cblock keyBlock;
     DES_key_schedule schedule;
 
-    // Convert long key to DES_cblock
+    // Set key parity and prepare key schedule
     for (int i = 0; i < 8; ++i) {
         keyBlock[i] = (key >> (i * 8)) & 0xFF;
     }
-
     DES_set_odd_parity(&keyBlock);
     DES_set_key_checked(&keyBlock, &schedule);
+
+    // Decrypt
     DES_ecb_encrypt((DES_cblock *)ciph, (DES_cblock *)ciph, &schedule, DES_DECRYPT);
 }
 
@@ -24,13 +25,14 @@ void encrypt(long key, char *ciph, int len) {
     DES_cblock keyBlock;
     DES_key_schedule schedule;
 
-    // Convert long key to DES_cblock
+    // Set key parity and prepare key schedule
     for (int i = 0; i < 8; ++i) {
         keyBlock[i] = (key >> (i * 8)) & 0xFF;
     }
-
     DES_set_odd_parity(&keyBlock);
     DES_set_key_checked(&keyBlock, &schedule);
+
+    // Encrypt
     DES_ecb_encrypt((DES_cblock *)ciph, (DES_cblock *)ciph, &schedule, DES_ENCRYPT);
 }
 
@@ -50,16 +52,16 @@ int main(int argc, char *argv[]) {
     int ciphlen = strlen((char *)cipher);
     long found = 0;
 
-    for (long i = 0; i < upper && found == 0; ++i) {
+    for (long i = 0; i < upper; ++i) {
         if (tryKey(i, (char *)cipher, ciphlen)) {
             found = i;
             break;
         }
     }
 
-    if (found != 0) {
+    if (found) {
         decrypt(found, (char *)cipher, ciphlen);
-        printf("Found key: %li\nDecrypted message: %s\n", found, cipher);
+        printf("Key: %li\nDecrypted message: %s\n", found, cipher);
     } else {
         printf("Key not found.\n");
     }
